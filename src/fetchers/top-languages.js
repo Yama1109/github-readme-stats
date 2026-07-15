@@ -24,10 +24,44 @@ const fetcher = (variables, token) => {
   return request(
     {
       query: `
-      query userInfo($login: String!) {
+      query userInfo($login: String!, $includeYamaOrganizations: Boolean!) {
         user(login: $login) {
           # fetch only owner repos & not forks
           repositories(ownerAffiliations: OWNER, isFork: false, first: 100) {
+            nodes {
+              name
+              languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
+                edges {
+                  size
+                  node {
+                    color
+                    name
+                  }
+                }
+              }
+            }
+          }
+        }
+        qoniApp: organization(login: "qoni-app")
+          @include(if: $includeYamaOrganizations) {
+          repositories(isFork: false, first: 100) {
+            nodes {
+              name
+              languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
+                edges {
+                  size
+                  node {
+                    color
+                    name
+                  }
+                }
+              }
+            }
+          }
+        }
+        yamashiroPrint: organization(login: "yamashiro-print")
+          @include(if: $includeYamaOrganizations) {
+          repositories(isFork: false, first: 100) {
             nodes {
               name
               languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
@@ -75,7 +109,11 @@ const fetchTopLanguages = async (
     throw new MissingParamError(["username"]);
   }
 
-  const res = await retryer(fetcher, { login: username });
+  const includeYamaOrganizations = username.toLowerCase() === "yama1109";
+  const res = await retryer(fetcher, {
+    login: username,
+    includeYamaOrganizations,
+  });
 
   if (res.data.errors) {
     logger.error(res.data.errors);
@@ -98,6 +136,12 @@ const fetchTopLanguages = async (
   }
 
   let repoNodes = res.data.data.user.repositories.nodes;
+  if (includeYamaOrganizations) {
+    repoNodes = repoNodes.concat(
+      res.data.data.qoniApp?.repositories.nodes ?? [],
+      res.data.data.yamashiroPrint?.repositories.nodes ?? [],
+    );
+  }
   let repoToHide = {};
 
   // populate repoToHide map for quick lookup

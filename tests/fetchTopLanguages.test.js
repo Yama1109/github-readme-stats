@@ -61,6 +61,57 @@ const error = {
 };
 
 describe("FetchTopLanguages", () => {
+  it("should include Yama1109 organization repositories", async () => {
+    mock.onPost("https://api.github.com/graphql").reply(200, {
+      data: {
+        ...data_langs.data,
+        qoniApp: {
+          repositories: {
+            nodes: [
+              {
+                name: "wander-backend",
+                languages: {
+                  edges: [
+                    { size: 300, node: { color: "#3572A5", name: "Python" } },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+        yamashiroPrint: {
+          repositories: {
+            nodes: [
+              {
+                name: "print-attendance",
+                languages: {
+                  edges: [
+                    { size: 250, node: { color: "#00ADD8", name: "Go" } },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      },
+    });
+
+    const repo = await fetchTopLanguages("Yama1109");
+
+    expect(repo.Go).toStrictEqual({
+      color: "#00ADD8",
+      count: 1,
+      name: "Go",
+      size: 250,
+    });
+    expect(repo.Python).toStrictEqual({
+      color: "#3572A5",
+      count: 1,
+      name: "Python",
+      size: 300,
+    });
+  });
+
   it("should fetch correct language data while using the new calculation", async () => {
     mock.onPost("https://api.github.com/graphql").reply(200, data_langs);
 
