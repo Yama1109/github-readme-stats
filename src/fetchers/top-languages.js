@@ -76,6 +76,23 @@ const fetcher = (variables, token) => {
             }
           }
         }
+        viglab: organization(login: "viglab")
+          @include(if: $includeYamaOrganizations) {
+          repositories(isFork: false, first: 100) {
+            nodes {
+              name
+              languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
+                edges {
+                  size
+                  node {
+                    color
+                    name
+                  }
+                }
+              }
+            }
+          }
+        }
       }
       `,
       variables,
@@ -140,6 +157,7 @@ const fetchTopLanguages = async (
     repoNodes = repoNodes.concat(
       res.data.data.qoniApp?.repositories.nodes ?? [],
       res.data.data.yamashiroPrint?.repositories.nodes ?? [],
+      res.data.data.viglab?.repositories.nodes ?? [],
     );
   }
   let repoToHide = {};

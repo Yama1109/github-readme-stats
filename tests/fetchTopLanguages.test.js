@@ -93,6 +93,23 @@ describe("FetchTopLanguages", () => {
             ],
           },
         },
+        viglab: {
+          repositories: {
+            nodes: [
+              {
+                name: "assist-frontend",
+                languages: {
+                  edges: [
+                    {
+                      size: 400,
+                      node: { color: "#3178c6", name: "TypeScript" },
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
       },
     });
 
@@ -109,6 +126,12 @@ describe("FetchTopLanguages", () => {
       count: 1,
       name: "Python",
       size: 300,
+    });
+    expect(repo.TypeScript).toStrictEqual({
+      color: "#3178c6",
+      count: 1,
+      name: "TypeScript",
+      size: 400,
     });
   });
 
